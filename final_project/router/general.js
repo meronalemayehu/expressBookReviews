@@ -148,6 +148,33 @@ public_users.get('/title/:title',function (req, res) {
   }
 });
 
+public_users.get('/async-title/:title', async function (req, res) {
+    try {
+      const title = req.params.title;
+  
+      let getBooksByTitle = (title) => {
+        return new Promise((resolve, reject) => {
+          const matchingBooks = Object.values(books).filter(
+            (book) => book.title === title
+          );
+  
+          if (matchingBooks.length > 0) {
+            resolve(matchingBooks);
+          } else {
+            reject("No books found for this title");
+          }
+        });
+      };
+  
+      const result = await getBooksByTitle(title);
+      return res.status(200).json(result);
+  
+    } catch (err) {
+      return res.status(404).json({ message: err });
+    }
+  });
+  
+
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
