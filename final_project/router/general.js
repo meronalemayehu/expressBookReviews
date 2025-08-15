@@ -102,6 +102,33 @@ public_users.get('/author/:author',function (req, res) {
   }
 });
 
+public_users.get('/async-author/:author', async function (req, res) {
+    try {
+      const author = req.params.author;
+  
+      let getBooksByAuthor = (author) => {
+        return new Promise((resolve, reject) => {
+          const matchingBooks = Object.values(books).filter(
+            (book) => book.author === author
+          );
+  
+          if (matchingBooks.length > 0) {
+            resolve(matchingBooks);
+          } else {
+            reject("No books found for this author");
+          }
+        });
+      };
+  
+      const result = await getBooksByAuthor(author);
+      return res.status(200).json(result);
+  
+    } catch (err) {
+      return res.status(404).json({ message: err });
+    }
+  });
+  
+
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
