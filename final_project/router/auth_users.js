@@ -3,20 +3,55 @@ const jwt = require('jsonwebtoken');
 let books = require("./booksdb.js");
 const regd_users = express.Router();
 
-let users = [];
+let users = [
+    {
+        "username": "myNewUser",
+        "password": "securePassword123"
+      }
+];
 
 const isValid = (username)=>{ //returns boolean
 //write code to check is the username is valid
+  // Check if the username already exists
+  let valid = true;
+  users.forEach((user) => {
+    if (user.username === username) {
+      valid = false;
+    }
+  });
+  return valid;
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
 //write code to check if username and password match the one we have in records.
+  // Check if username and password match any record
+  const doesExist = users.find((user) => {
+    return user.username === username && user.password === password;
+  });
+
+  return doesExist !== undefined;
 }
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username and password are required." });
+  }
+
+  if (!authenticatedUser(username, password)) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  // Create JWT token
+  let accessToken = jwt.sign({ username: username }, 'access', { expiresIn: '1h' });
+
+  // Save token in session
+  req.session.authorization = { accessToken };
+
+  return res.status(200).json({ message: "User successfully logged in" });
 });
 
 // Add a book review
